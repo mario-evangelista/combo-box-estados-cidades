@@ -24,13 +24,22 @@
       <br />
       <div class="mb-3">
         <label for="cidades" class="form-label">Cidade:</label>
-        <select id="cidades" class="form-select" disabled>
+        <input
+          type="text"
+          id="pesquisaCidade"
+          class="form-control mb-2"
+          placeholder="Pesquisar cidade..."
+          oninput="filtrarCidades()"
+          disabled
+        />
+        <br />
+        <select id="cidades" class="form-select" size="5" disabled>
           <option value="">Selecione uma cidade</option>
         </select>
       </div>
       <br />
       <!-- Botão para limpar o formulário -->
-      <div class="d-grid gap-2 center">
+      <div class="text-center">
         <button class="btn btn-danger" onclick="limparFormulario()">
           Limpar Formulário
         </button>
@@ -47,3 +56,4 @@
     <script src="js/app.js"></script>
   </body>
 </html>
+<!-- Fim do arquivo index.html -->

@@ -8,26 +8,20 @@ const URL_ESTADOS =
 const URL_CIDADES =
   "https://servicodados.ibge.gov.br/api/v1/localidades/estados/{UF}/municipios";
 
+// Variável global para armazenar a lista completa de cidades
+let todasCidades = [];
+
 // Função para carregar os estados na página
 async function carregarEstados() {
   try {
-    // Faz uma requisição GET para a API do IBGE para obter a lista de estados
     const response = await fetch(URL_ESTADOS);
-
-    // Converte a resposta para JSON
     const estados = await response.json();
-
-    // Ordena os estados por nome
     estados.sort((a, b) => a.nome.localeCompare(b.nome));
-
-    // Seleciona o elemento <select> dos estados
     const selectEstados = document.getElementById("estados");
-
-    // Itera sobre a lista de estados e adiciona cada um como uma opção no <select>
     estados.forEach((estado) => {
       const option = document.createElement("option");
-      option.value = estado.sigla; // Usa a sigla do estado como valor
-      option.textContent = estado.nome; // Usa o nome do estado como texto
+      option.value = estado.sigla;
+      option.textContent = estado.nome;
       selectEstados.appendChild(option);
     });
   } catch (error) {
@@ -37,60 +31,78 @@ async function carregarEstados() {
 
 // Função para carregar as cidades de um estado selecionado
 async function carregarCidades() {
-  // Seleciona o elemento <select> dos estados e das cidades
   const selectEstados = document.getElementById("estados");
   const selectCidades = document.getElementById("cidades");
-
-  // Obtém a sigla do estado selecionado
+  const inputPesquisa = document.getElementById("pesquisaCidade");
   const uf = selectEstados.value;
 
-  // Se um estado foi selecionado
   if (uf) {
     try {
-      // Faz uma requisição GET para a API do IBGE para obter a lista de cidades do estado selecionado
       const response = await fetch(URL_CIDADES.replace("{UF}", uf));
+      todasCidades = await response.json();
+      todasCidades.sort((a, b) => a.nome.localeCompare(b.nome));
 
-      // Converte a resposta para JSON
-      const cidades = await response.json();
-
-      // Ordena as cidades por nome
-      cidades.sort((a, b) => a.nome.localeCompare(b.nome));
-
-      // Limpa as opções anteriores do <select> das cidades
-      selectCidades.innerHTML =
-        '<option value="">Selecione uma cidade</option>';
-
-      // Itera sobre a lista de cidades e adiciona cada uma como uma opção no <select>
-      cidades.forEach((cidade) => {
+      // Limpa o select de cidades e adiciona as novas opções
+      selectCidades.innerHTML = "";
+      todasCidades.forEach((cidade) => {
         const option = document.createElement("option");
-        option.value = cidade.nome; // Usa o nome da cidade como valor
-        option.textContent = cidade.nome; // Usa o nome da cidade como texto
+        option.value = cidade.nome;
+        option.textContent = cidade.nome;
         selectCidades.appendChild(option);
       });
 
-      // Habilita o <select> das cidades
+      // Habilita o campo de pesquisa e o select de cidades
+      inputPesquisa.disabled = false;
       selectCidades.disabled = false;
     } catch (error) {
       console.error("Erro ao carregar cidades:", error);
     }
   } else {
-    // Se nenhum estado foi selecionado, desabilita o <select> das cidades e limpa as opções
+    // Desabilita o campo de pesquisa e o select de cidades
+    inputPesquisa.disabled = true;
     selectCidades.disabled = true;
     selectCidades.innerHTML = '<option value="">Selecione uma cidade</option>';
   }
+}
+
+// Função para filtrar as cidades com base no texto digitado
+function filtrarCidades() {
+  const inputPesquisa = document.getElementById("pesquisaCidade");
+  const termoPesquisa = inputPesquisa.value.toLowerCase();
+  const selectCidades = document.getElementById("cidades");
+
+  // Filtra as cidades que correspondem ao termo de pesquisa
+  const cidadesFiltradas = todasCidades.filter((cidade) =>
+    cidade.nome.toLowerCase().includes(termoPesquisa)
+  );
+
+  // Limpa o select de cidades e adiciona as cidades filtradas
+  selectCidades.innerHTML = "";
+  cidadesFiltradas.forEach((cidade) => {
+    const option = document.createElement("option");
+    option.value = cidade.nome;
+    option.textContent = cidade.nome;
+    selectCidades.appendChild(option);
+  });
 }
 
 // Função para limpar o formulário
 function limparFormulario() {
   const selectEstados = document.getElementById("estados");
   const selectCidades = document.getElementById("cidades");
+  const inputPesquisa = document.getElementById("pesquisaCidade");
 
-  // Reseta os valores dos selects
+  // Reseta os valores dos selects e do campo de pesquisa
   selectEstados.value = "";
   selectCidades.innerHTML = '<option value="">Selecione uma cidade</option>';
+  inputPesquisa.value = "";
 
-  // Desabilita o select de cidades
+  // Desabilita o campo de pesquisa e o select de cidades
+  inputPesquisa.disabled = true;
   selectCidades.disabled = true;
+
+  // Limpa a lista de cidades carregadas
+  todasCidades = [];
 }
 
 // Quando a página é carregada, chama a função para carregar os estados
